@@ -1,0 +1,9 @@
+/* Structural selectors work regardless of the interface language.
+   CSS also covers results inserted after initial page load. */
+html[data-noai-search-enabled="true"] #rcnt [data-lhcontainer]:has([data-aquarium]),
+html[data-noai-search-enabled="true"] #rcnt [data-lhcontainer]:has(#m-x-content),
+html[data-noai-search-enabled="true"] #rcnt [data-aquarium],
+html[data-noai-search-enabled="true"] #rcnt #m-x-content,
+html[data-noai-search-enabled="true"] [data-no-ai-overview-hidden] {
+  display: none !important;
+}
