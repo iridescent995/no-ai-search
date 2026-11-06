@@ -7,3 +7,8 @@ html[data-noai-search-enabled="true"] #rcnt #m-x-content,
 html[data-noai-search-enabled="true"] [data-no-ai-overview-hidden] {
   display: none !important;
 }
+
+/* Hide the navigation item only; this does not block the AI Mode service. */
+html[data-noai-search-hide-mode="true"] [data-noai-search-mode-hidden] {
+  display: none !important;
+}
