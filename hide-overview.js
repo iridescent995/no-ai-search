@@ -5,10 +5,27 @@
   const normalize = element => element.textContent.replace(/\s+/g, " ").trim().toLowerCase();
   let enabled = false;
   let queued = false;
-  let revision = 0;
+  let hideAiMode = false;
+  const revisions = { enabled: 0, hideAiMode: 0 };
   function updatePage() {
     queued = false;
     document.documentElement?.setAttribute("data-noai-search-enabled", String(enabled));
+    document.documentElement?.setAttribute("data-noai-search-hide-mode", String(hideAiMode));
+    const modeItems = new Set();
+    if (hideAiMode) {
+      // Only search navigation, never ordinary result links to AI Mode.
+      for (const link of document.querySelectorAll('#cnt [role="navigation"] a[href], #hdtb a[href], nav a[href]')) {
+        if (link.closest("#rcnt, #rso")) continue;
+        let url;
+        try { url = new URL(link.getAttribute("href"), location.href); } catch { continue; }
+        if (url.origin !== location.origin || url.pathname !== "/search" || url.searchParams.get("udm") !== "50") continue;
+        modeItems.add(link.closest('[role="listitem"]') || link);
+      }
+    }
+    for (const item of document.querySelectorAll("[data-noai-search-mode-hidden]")) {
+      if (!modeItems.has(item)) item.removeAttribute("data-noai-search-mode-hidden");
+    }
+    for (const item of modeItems) item.setAttribute("data-noai-search-mode-hidden", "");
     const results = document.getElementById("rcnt");
     const sections = new Set();
     if (enabled && results) {
@@ -31,17 +48,22 @@
     if (queued) return;
     queued = true;
     requestAnimationFrame(updatePage);
-  }).observe(document, { childList: true, subtree: true, characterData: true });
+  }).observe(document, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["href"] });
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area !== "local" || !changes.enabled) return;
-    revision++;
-    enabled = changes.enabled.newValue !== false;
+    if (area !== "local") return;
+    for (const key of Object.keys(revisions)) {
+      if (!changes[key]) continue;
+      revisions[key]++;
+      const value = changes[key].newValue;
+      if (key === "enabled") enabled = value !== false;
+      else hideAiMode = value === true;
+    }
     updatePage();
   });
-  const initialRevision = revision;
-  chrome.storage.local.get({ enabled: true }).then(settings => {
-    if (initialRevision !== revision) return;
-    enabled = settings.enabled !== false;
+  const initialRevisions = { ...revisions };
+  chrome.storage.local.get({ enabled: true, hideAiMode: false }).then(settings => {
+    if (initialRevisions.enabled === revisions.enabled) enabled = settings.enabled !== false;
+    if (initialRevisions.hideAiMode === revisions.hideAiMode) hideAiMode = settings.hideAiMode === true;
     updatePage();
-  }).catch(() => { enabled = false; updatePage(); });
+  }).catch(() => { enabled = false; hideAiMode = false; updatePage(); });
 })();

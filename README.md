@@ -2,9 +2,9 @@
 
 # NoAI Search — Google AI Overview Blocker for Chrome
 
-**Clear your Google Search.** NoAI Search is a lightweight **Google AI Overview blocker for Chrome**. Hide AI Overviews with one toggle and keep regular search results in the All tab.
+**Clear your Google Search.** NoAI Search is a lightweight **Google AI Overview blocker for Chrome**. Hide AI Overviews, optionally hide the AI Mode tab, and keep regular search results in the All tab.
 
-Want to **turn off AI Overviews in Google Search**? This extension hides the AI-generated summary locally in your browser. Switch it off whenever you want to see the original results again.
+Want to **turn off AI Overviews in Google Search**? This extension hides the AI-generated summary locally in your browser. Use independent toggles to restore either interface element whenever you want.
 
 [Download ZIP](https://github.com/iridescent995/no-ai-search/archive/refs/heads/main.zip) · [Installation](#how-to-hide-google-ai-overviews-in-chrome) · [FAQ](#frequently-asked-questions) · [Report an issue](https://github.com/iridescent995/no-ai-search/issues)
 
@@ -12,7 +12,8 @@ Want to **turn off AI Overviews in Google Search**? This extension hides the AI-
 
 ## Features
 
-- **One-click toggle:** a compact popup enables or pauses AI Overview hiding.
+- **Two independent toggles:** hide AI Overviews and optionally hide the AI Mode navigation tab.
+- **Defaults that preserve choice:** overview hiding starts on; AI Mode tab hiding starts off, including for existing installations.
 - **Live updates:** the setting applies to supported, already-open search tabs without a refresh after initial installation.
 - **Saved preference:** your on/off choice stays on this Chrome profile across restarts.
 - **Dynamic content:** handles AI Overviews inserted after the results load.
@@ -28,7 +29,7 @@ Want to **turn off AI Overviews in Google Search**? This extension hides the AI-
 4. Enable **Developer mode**.
 5. Choose **Load unpacked** and select the folder containing `manifest.json`.
 6. Refresh Google Search tabs that were already open.
-7. Pin **NoAI Search** using Chrome’s Extensions menu, then click its icon to toggle **Hide AI Overviews**.
+7. Pin **NoAI Search** using Chrome’s Extensions menu, then click its icon to choose **Hide AI Overviews** and **Hide AI Mode tab**.
 
 Chrome 105 or later is required. This is a locally installed extension; no Chrome Web Store listing is currently provided.
 
@@ -36,17 +37,17 @@ Chrome 105 or later is required. This is a locally installed extension; no Chrom
 
 Download the latest files or run `git pull` in your clone. Keep them in the same extension folder, click **Reload** on the NoAI Search card at `chrome://extensions`, then refresh your Google Search tabs.
 
-## One-click AI Overview toggle
+## AI Overview and AI Mode toggles
 
-![NoAI Search compact popup with the Hide AI Overviews toggle enabled](docs/popup-preview.png)
+![NoAI Search popup: AI Overview hiding on and AI Mode tab hiding off by default](docs/popup-preview.png)
 
-The popup is 284 × 176 pixels. Its only setting controls AI Overview hiding across supported Google Search tabs.
+The popup is 284 × 241 pixels. **Hide AI Overviews** defaults to on. **Hide AI Mode tab** defaults to off. Both settings apply independently across supported Google Search tabs.
 
 ## How it works
 
-A Manifest V3 content script runs only on the Google Search URL patterns listed in `manifest.json`. CSS targets known AI Overview containers. An exact-heading fallback handles additional English layouts, and a mutation observer handles newly loaded content. The popup stores a single `enabled` boolean using `chrome.storage.local`; open search tabs listen for setting changes.
+A Manifest V3 content script runs only on the Google Search URL patterns listed in `manifest.json`. CSS targets known AI Overview containers. An exact-heading fallback handles additional English layouts, and a mutation observer handles newly loaded content. The popup stores two booleans, `enabled` and `hideAiMode`, using `chrome.storage.local`; open search tabs listen for setting changes.
 
-Structural selectors work independently of interface language. The exact-heading fallback currently supports English. Google may change its markup, so future selector updates may be necessary. There may be a brief display of the overview while the saved setting loads.
+Structural selectors work independently of interface language. The exact-heading fallback currently supports English. Google may change its markup, so future selector updates may be necessary. AI Mode detection targets same-origin `/search` navigation links with the exact `udm=50` query parameter. It hides their navigation item, leaving ordinary results and other filters in place. There may be a brief display of hidden elements while the saved settings load.
 
 ## Supported Google Search domains
 
@@ -58,7 +59,7 @@ For another Google domain, add its exact `https://www.google.example/search*` ma
 
 | Access | Purpose |
 | --- | --- |
-| `storage` | Save the on/off preference locally in this Chrome profile. |
+| `storage` | Save the two on/off preferences locally in this Chrome profile. |
 | Listed Google Search pages | Find and hide AI Overview elements. |
 
 No search queries, result contents, browsing history, or personal information are stored or transmitted by the extension. There is no backend, telemetry, remote code, or runtime dependency. README badges request images from Shields.io when viewed on GitHub; the extension itself does not contact it.
@@ -73,9 +74,17 @@ Install NoAI Search, refresh Google Search, and leave **Hide AI Overviews** enab
 
 It hides AI Overviews locally on supported search pages while enabled. It does not change Google’s account settings or stop Google from generating answers.
 
-### Does it remove AI Mode?
+### Can I hide the AI Mode tab in Google Search?
 
-No. The separate AI Mode tab remains available. This extension targets AI Overviews in standard search results.
+Yes. Enable **Hide AI Mode tab** in the popup. It is **off by default**, so the tab remains visible until you opt in. This setting is independent of AI Overview hiding.
+
+### Does hiding the AI Mode tab disable AI Mode?
+
+No. It hides the navigation entry; it does not block direct access to AI Mode, alter Google account settings, or stop Google’s AI services.
+
+### Can this restore Google Search if a school blocks access?
+
+No. This is a local interface customization, not a way around school policies or account-level restrictions. It only works where Google Search is accessible and extension installation is allowed.
 
 ### Does it redirect me to Google’s Web filter?
 
@@ -97,8 +106,8 @@ No build step is required. Edit the source, reload the unpacked extension, then 
 | --- | --- |
 | `manifest.json` | Extension name, site scope, popup, icons, and permissions |
 | `hide-overview.css` | Setting-gated AI Overview selectors |
-| `hide-overview.js` | Saved preference, live changes, and layout fallback |
-| `popup.html`, `popup.css`, `popup.js` | Compact, keyboard-accessible toggle |
+| `hide-overview.js` | Saved preferences, live changes, overview fallback, and AI Mode navigation detection |
+| `popup.html`, `popup.css`, `popup.js` | Compact, keyboard-accessible toggles |
 | `icons/` | PNG icons in 16, 32, 48, and 128 px; editable SVG master |
 
 Independent project; not affiliated with Google. Google and Chrome are trademarks of their respective owners.
